@@ -2,9 +2,15 @@ package com.pawlowski.butanmonitor.data
 
 import com.pawlowski.butanmonitor.domain.model.Measurement
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.receiveDeserialized
 import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.request.parameter
+import io.ktor.client.request.port
+import io.ktor.client.request.request
 import io.ktor.http.HttpMethod
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -28,6 +34,19 @@ class ButanService
             }.map {
                 it.toDomain()
             }
+
+        suspend fun getHistoryMeasurements(
+            from: Long,
+            to: Long,
+        ): ImmutableList<Measurement> =
+            httpClient.request(urlString = "srv3.enteam.pl/measurements") {
+                method = HttpMethod.Get
+                port = 3012
+                parameter("from", from)
+                parameter("to", to)
+            }.body<List<MeasurementDto>>()
+                .map { it.toDomain() }
+                .toPersistentList()
 
         private fun MeasurementDto.toDomain(): Measurement =
             Measurement(
