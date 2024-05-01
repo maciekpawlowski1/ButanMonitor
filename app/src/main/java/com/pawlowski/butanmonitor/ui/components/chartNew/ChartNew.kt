@@ -1,0 +1,342 @@
+package com.pawlowski.butanmonitor.ui.components.chartNew
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
+import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew.Axis
+import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew.WidthConfig
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
+interface ChartNew {
+    data class Record(
+        val timestamp: Long,
+        val value: Int,
+    )
+
+    data class Axis(
+        val records: List<Record>,
+        val color: Color,
+    )
+
+    sealed interface WidthConfig {
+        data class Scrollable(
+            val autoScroll: Boolean,
+            val secondsPerScreenWidth: Long,
+        ) : WidthConfig
+
+        data object Fit : WidthConfig
+    }
+}
+
+private fun WidthConfig.isAutoScroll(): Boolean = this is WidthConfig.Scrollable && autoScroll
+
+private fun ImmutableList<Axis>.timestampRange(): Pair<Long, Long> {
+    fun Pair<Long, Long>.getNewMinMax(newValue: Long): Pair<Long, Long> = min(first, newValue) to max(second, newValue)
+
+    fun Pair<Long, Long>.getNewMinMax(newRange: Pair<Long, Long>): Pair<Long, Long> =
+        min(first, newRange.first) to max(second, newRange.second)
+
+    val axissesRanges =
+        map {
+            it.records.fold(initial = 0L to 0L) { currentRange, newRecord ->
+                currentRange.getNewMinMax(newRecord.timestamp)
+            }
+        }
+
+    return axissesRanges.fold(initial = 0L to 0L) { currentRange, newRange ->
+        currentRange.getNewMinMax(newRange)
+    }
+}
+
+private fun ImmutableList<Axis>.maxValue() =
+    maxOf {
+        if (it.records.isNotEmpty()) {
+            it.records.maxOf { it.value }.coerceAtLeast(minimumValue = 0) + 5
+        } else {
+            5
+        }
+    }
+
+@Composable
+fun ChartNew(
+    axisses: ImmutableList<Axis>,
+    widthConfig: WidthConfig,
+) {
+    val axisTimestampRange =
+        remember(axisses) {
+            axisses.timestampRange()
+        }
+
+    val scrollOffset =
+        remember {
+            mutableFloatStateOf(0f)
+        }
+
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .scrollableModifierOrNot(
+                    axisTimestampRange = axisTimestampRange,
+                    widthConfig = widthConfig,
+                    scrollOffset = scrollOffset,
+                ),
+    ) {
+        ChartInternal(
+            axisses = axisses,
+            widthConfig = widthConfig,
+            axisTimestampRange = axisTimestampRange,
+            translateOffset = scrollOffset::value,
+        )
+    }
+}
+
+private fun Modifier.scrollableModifierOrNot(
+    scrollOffset: MutableFloatState,
+    axisTimestampRange: Pair<Long, Long>,
+    widthConfig: WidthConfig,
+): Modifier =
+    composed {
+        if (widthConfig is WidthConfig.Scrollable) {
+            val maxScrollAvailable =
+                getMaxScrollAvailable(
+                    minTimestamp = axisTimestampRange.first,
+                    maxTimestamp = axisTimestampRange.second,
+                    secondsPerScreenWidth = widthConfig.secondsPerScreenWidth,
+                )
+
+            val scrollState =
+                rememberScrollableState { delta ->
+                    scrollOffset.floatValue =
+                        (scrollOffset.floatValue + delta)
+                            .coerceAtLeast(minimumValue = -maxScrollAvailable)
+                            .coerceAtMost(maximumValue = 0f)
+                    delta
+                }
+
+            LaunchedEffect(key1 = widthConfig, scrollState, scrollOffset) {
+                if (widthConfig.isAutoScroll()) {
+                    while (true) {
+                        if (!scrollState.isScrollInProgress && widthConfig.isAutoScroll()) {
+                            runCatching {
+                                val scrollByValue =
+                                    -abs(scrollOffset.floatValue - maxScrollAvailable)
+                                scrollState.scrollBy(scrollByValue)
+                            }
+                        }
+                        delay(10)
+                    }
+                }
+            }
+
+            remember(scrollState) {
+                Modifier.scrollable(
+                    state = scrollState,
+                    orientation = Orientation.Horizontal,
+                )
+            }
+        } else {
+            this
+        }
+    }
+
+@Composable
+private fun getMaxScrollAvailable(
+    minTimestamp: Long,
+    maxTimestamp: Long,
+    secondsPerScreenWidth: Long,
+): Float {
+    // TODO: Move to layout phase?
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val density = LocalDensity.current
+
+    val diff = maxTimestamp - minTimestamp
+    val scaleX = with(density) { screenWidth.toPx() } / secondsPerScreenWidth
+
+    return (diff * scaleX) - with(density) { screenWidth.toPx() }
+}
+
+@Composable
+private fun ChartInternal(
+    axisses: ImmutableList<Axis>,
+    axisTimestampRange: Pair<Long, Long>,
+    widthConfig: WidthConfig,
+    translateOffset: () -> Float,
+) {
+    val (minTimestamp, maxTimestamp) = axisTimestampRange
+    val maxValue =
+        remember(axisses) {
+            axisses.maxValue()
+        }
+
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+
+    val scaleX =
+        when (widthConfig) {
+            is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.secondsPerScreenWidth
+            WidthConfig.Fit -> with(density) { screenWidth.toPx() } / maxTimestamp
+        }
+    Canvas(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(300.dp),
+    ) {
+        val scaleY = size.height / maxValue
+
+        val scaledRecords =
+            axisses.toScaledOffsets(
+                minTimestamp = minTimestamp,
+                scaleX = scaleX,
+                scaleY = scaleY,
+                canvasHeight = size.height,
+            )
+
+        drawHorizontalHelperLines(
+            maxHelperValue = maxValue.toLong(),
+            scaleY = scaleY,
+            textMeasurer = textMeasurer,
+        )
+
+        translate(left = translateOffset()) {
+            scaledRecords.forEach { (points, color) ->
+                drawRecordsPath(
+                    recordsPoints = points,
+                    color = color,
+                )
+            }
+        }
+    }
+}
+
+private data class AxisOffsetsAndColor(
+    val offsets: ImmutableList<Offset>,
+    val color: Color,
+)
+
+private fun ImmutableList<Axis>.toScaledOffsets(
+    minTimestamp: Long,
+    scaleX: Float,
+    scaleY: Float,
+    canvasHeight: Float,
+): ImmutableList<AxisOffsetsAndColor> =
+    map { axis ->
+        AxisOffsetsAndColor(
+            offsets =
+                axis.records.map { record ->
+                    Offset(
+                        x = (record.timestamp - minTimestamp) * scaleX,
+                        y = (canvasHeight - (record.value * scaleY)),
+                    )
+                }.toPersistentList(),
+            color = axis.color,
+        )
+    }.toPersistentList()
+
+private fun DrawScope.drawRecordsPath(
+    recordsPoints: List<Offset>,
+    color: Color,
+) {
+    val path =
+        Path().apply {
+            val firstPoint = recordsPoints.first()
+            moveTo(
+                x = firstPoint.x,
+                y = firstPoint.y,
+            )
+            recordsPoints.drop(1).forEach { record ->
+                lineTo(
+                    x = record.x,
+                    y = record.y,
+                )
+            }
+        }
+
+    drawPath(
+        path = path,
+        color = color,
+        style =
+            Stroke(
+                width = 3.dp.toPx(),
+            ),
+    )
+}
+
+private fun DrawScope.drawHorizontalHelperLines(
+    maxHelperValue: Long,
+    scaleY: Float,
+    textMeasurer: TextMeasurer,
+) {
+    val step = 10
+    val linesCount = (maxHelperValue / step).toInt()
+    repeat(linesCount) {
+        val lineY = it * step
+        val lineYScaled = lineY * scaleY
+        val lineYSwapped = size.height - lineYScaled
+
+        val textLayoutResult =
+            textMeasurer.measure(
+                text =
+                    buildAnnotatedString {
+                        append(lineY.toString())
+                    },
+            )
+        drawText(
+            textLayoutResult = textLayoutResult,
+            topLeft =
+                Offset(
+                    x = 0f,
+                    y = lineYSwapped - textLayoutResult.size.height,
+                ),
+        )
+
+        drawLine(
+            start =
+                Offset(
+                    x = 0f,
+                    y = lineYSwapped,
+                ),
+            end =
+                Offset(
+                    x = size.width,
+                    y = lineYSwapped,
+                ),
+            color = Color.Gray,
+            strokeWidth = 1f,
+            pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(10f, 5f)),
+        )
+    }
+}

@@ -85,5 +85,6 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.serialization.kotlinx.json)
 
+    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.datetime)
 }
