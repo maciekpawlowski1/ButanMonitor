@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pawlowski.butanmonitor.utils.RetrySharedFlow
 import com.pawlowski.network.data.ButanService
+import com.pawlowski.notifications.synchronization.RunPushTokenSynchronizationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,6 +24,7 @@ class MainViewModel
     @Inject
     constructor(
         private val butanService: ButanService,
+        private val runPushTokenSynchronizationUseCase: RunPushTokenSynchronizationUseCase,
     ) : ViewModel() {
         private val retrySharedFlow = RetrySharedFlow()
 
@@ -76,6 +79,12 @@ class MainViewModel
                 is MainEvent.RetryClick -> {
                     retrySharedFlow.sendRetryEvent()
                 }
+            }
+        }
+
+        init {
+            viewModelScope.launch {
+                runPushTokenSynchronizationUseCase()
             }
         }
     }

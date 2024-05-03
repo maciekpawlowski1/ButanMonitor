@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.pawlowski.notificationservice"
+    namespace = "com.pawlowski.notifications"
     compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
@@ -29,6 +29,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":network"))
+
     implementation(libs.firebase.messaging)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)

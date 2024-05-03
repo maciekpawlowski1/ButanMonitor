@@ -7,6 +7,7 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.com.google.dagger.hilt.android)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("com.google.gms.google-services")
 }
 
 val keystoreProperties = Properties()
@@ -89,6 +90,8 @@ dependencies {
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
+    implementation(libs.accompanist.permissions)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)

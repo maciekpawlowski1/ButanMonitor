@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.pawlowski.notificationservice"
+    namespace = "com.pawlowski.network"
     compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {

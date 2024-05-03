@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113085952011",
+    "project_id": "propan-5a0a2",
+    "storage_bucket": "propan-5a0a2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113085952011:android:4820678e130cc7cf87170e",
+        "android_client_info": {
+          "package_name": "com.pawlowski.butanmonitor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRMHY-LJO4tFoRuef0JWuFxSO9tdNArPc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
