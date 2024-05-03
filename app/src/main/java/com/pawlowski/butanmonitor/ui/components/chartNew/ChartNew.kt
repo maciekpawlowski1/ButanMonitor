@@ -69,12 +69,12 @@ private fun ImmutableList<Axis>.timestampRange(): Pair<Long, Long> {
 
     val axissesRanges =
         map {
-            it.records.fold(initial = 0L to 0L) { currentRange, newRecord ->
+            it.records.fold(initial = Long.MAX_VALUE to 0L) { currentRange, newRecord ->
                 currentRange.getNewMinMax(newRecord.timestamp)
             }
         }
 
-    return axissesRanges.fold(initial = 0L to 0L) { currentRange, newRange ->
+    return axissesRanges.fold(initial = Long.MAX_VALUE to 0L) { currentRange, newRange ->
         currentRange.getNewMinMax(newRange)
     }
 }
