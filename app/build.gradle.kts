@@ -17,12 +17,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.pawlowski.butanmonitor"
-    compileSdk = 34
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
         applicationId = "com.pawlowski.butanmonitor"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = ProjectConfig.minSdk
+        targetSdk = ProjectConfig.targetSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -62,7 +62,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = ProjectConfig.kotlinCompilerExtensions
     }
     packaging {
         resources {
@@ -72,6 +72,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":notifications"))
+
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
