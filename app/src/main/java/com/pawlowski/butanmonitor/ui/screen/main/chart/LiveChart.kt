@@ -11,10 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.pawlowski.butanmonitor.domain.model.Measurement
 import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew
+import com.pawlowski.butanmonitor.ui.utils.rememberChartNewRecords
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun LiveChart(measurements: List<Measurement>) {
+fun LiveChart(measurements: ImmutableList<Measurement>) {
     Column {
         val isAutoScrolling =
             remember {
@@ -27,24 +29,7 @@ fun LiveChart(measurements: List<Measurement>) {
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
-        val propaneRecords =
-            remember(measurements) {
-                measurements.map {
-                    ChartNew.Record(
-                        timestamp = it.timestamp,
-                        value = it.propaneLevel,
-                    )
-                }
-            }
-        val ammoniaRecords =
-            remember(measurements) {
-                measurements.map {
-                    ChartNew.Record(
-                        timestamp = it.timestamp,
-                        value = it.ammoniaLevel,
-                    )
-                }
-            }
+        val (propaneRecords, ammoniaRecords) = rememberChartNewRecords(measurements = measurements)
         ChartNew(
             axisses =
                 persistentListOf(

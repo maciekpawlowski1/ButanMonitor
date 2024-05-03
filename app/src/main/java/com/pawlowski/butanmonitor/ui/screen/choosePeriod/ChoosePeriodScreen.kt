@@ -8,16 +8,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -37,14 +40,29 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChoosePeriodScreen(onConfirmClick: (LocalDateTime, LocalDateTime) -> Unit) {
+fun ChoosePeriodScreen(
+    onBackClick: () -> Unit,
+    onConfirmClick: (LocalDateTime, LocalDateTime) -> Unit,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(space = 16.dp),
-        modifier = Modifier.padding(all = 16.dp),
     ) {
-        Text(text = "Wybierz okres")
+        TopAppBar(
+            title = {
+                Text(text = "Wybierz okres")
+            },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
         val fromChosenDate =
             remember {
                 mutableStateOf<LocalDate?>(null)
@@ -61,7 +79,10 @@ fun ChoosePeriodScreen(onConfirmClick: (LocalDateTime, LocalDateTime) -> Unit) {
             remember {
                 mutableStateOf<LocalTime?>(null)
             }
-        Column(verticalArrangement = Arrangement.spacedBy(space = 32.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(space = 32.dp),
+            modifier = Modifier.padding(all = 16.dp),
+        ) {
             ChooseTimeRow(
                 dateLabel = "Od (data)",
                 timeLabel = "Od (godzina)",
@@ -89,6 +110,7 @@ fun ChoosePeriodScreen(onConfirmClick: (LocalDateTime, LocalDateTime) -> Unit) {
                     onConfirmClick(fromDateTime, toDateTime)
                 }
             },
+            modifier = Modifier.padding(all = 16.dp),
         ) {
             Text(text = "Pokaż wykres")
         }

@@ -39,7 +39,7 @@ class ButanService
             from: Long,
             to: Long,
         ): ImmutableList<Measurement> =
-            httpClient.request(urlString = "srv3.enteam.pl/measurements") {
+            httpClient.request(urlString = "http://srv3.enteam.pl/measurements") {
                 method = HttpMethod.Get
                 port = 3012
                 parameter("from", from)

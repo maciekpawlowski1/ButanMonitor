@@ -1,9 +1,10 @@
 package com.pawlowski.butanmonitor.ui.screen.main
 
 import com.pawlowski.butanmonitor.domain.model.Measurement
+import kotlinx.collections.immutable.ImmutableList
 
 data class MainState(
-    val measurements: List<Measurement>,
+    val measurements: ImmutableList<Measurement>,
     val isLoading: Boolean,
     val isError: Boolean,
 )

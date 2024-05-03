@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.pawlowski.butanmonitor.data.ButanService
 import com.pawlowski.butanmonitor.utils.RetrySharedFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +31,7 @@ class MainViewModel
         private val _stateFlow =
             MutableStateFlow(
                 MainState(
-                    measurements = listOf(),
+                    measurements = persistentListOf(),
                     isError = false,
                     isLoading = true,
                 ),
@@ -40,7 +42,7 @@ class MainViewModel
                 .onEach { newMeasurement ->
                     _stateFlow.update {
                         it.copy(
-                            measurements = it.measurements + newMeasurement,
+                            measurements = (it.measurements + newMeasurement).toPersistentList(),
                             isLoading = false,
                         )
                     }
