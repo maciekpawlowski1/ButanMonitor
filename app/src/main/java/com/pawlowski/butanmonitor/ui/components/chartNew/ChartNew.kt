@@ -52,7 +52,7 @@ interface ChartNew {
     sealed interface WidthConfig {
         data class Scrollable(
             val autoScroll: Boolean,
-            val secondsPerScreenWidth: Long,
+            val millisecondsPerWidth: Long,
         ) : WidthConfig
 
         data object Fit : WidthConfig
@@ -133,7 +133,7 @@ private fun Modifier.scrollableModifierOrNot(
                 getMaxScrollAvailable(
                     minTimestamp = axisTimestampRange.first,
                     maxTimestamp = axisTimestampRange.second,
-                    secondsPerScreenWidth = widthConfig.secondsPerScreenWidth,
+                    secondsPerScreenWidth = widthConfig.millisecondsPerWidth,
                 )
 
             val scrollState =
@@ -206,7 +206,7 @@ private fun ChartInternal(
 
     val scaleX =
         when (widthConfig) {
-            is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.secondsPerScreenWidth
+            is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.millisecondsPerWidth
             WidthConfig.Fit -> with(density) { screenWidth.toPx() } / maxTimestamp
         }
     Canvas(

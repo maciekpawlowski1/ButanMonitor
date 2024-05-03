@@ -45,7 +45,7 @@ fun LiveChart(measurements: ImmutableList<Measurement>) {
             widthConfig =
                 ChartNew.WidthConfig.Scrollable(
                     autoScroll = isAutoScrolling.value,
-                    secondsPerScreenWidth = 60000L,
+                    millisecondsPerWidth = 60000L,
                 ),
         )
     }

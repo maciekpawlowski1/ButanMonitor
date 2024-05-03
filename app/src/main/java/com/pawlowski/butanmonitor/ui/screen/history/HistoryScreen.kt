@@ -77,7 +77,10 @@ fun HistoryScreen(
                             ),
                         ),
                     widthConfig =
-                        ChartNew.WidthConfig.Fit,
+                        ChartNew.WidthConfig.Scrollable(
+                            autoScroll = false,
+                            millisecondsPerWidth = 60000,
+                        ),
                 )
             }
         }
