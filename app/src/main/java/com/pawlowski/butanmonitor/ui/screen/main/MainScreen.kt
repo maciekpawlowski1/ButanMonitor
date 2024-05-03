@@ -21,7 +21,10 @@ fun MainScreen(
     onHistoryClick: () -> Unit,
 ) {
     Column {
-        IconButton(onClick = onHistoryClick) {
+        IconButton(
+            onClick = onHistoryClick,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
             Icon(
                 imageVector = Icons.Filled.History,
                 contentDescription = null,
