@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Butan Monitor"
 include(":app")
 include(":notifications")
+include(":network")

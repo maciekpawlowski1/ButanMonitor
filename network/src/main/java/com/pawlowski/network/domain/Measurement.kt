@@ -1,4 +1,4 @@
-package com.pawlowski.butanmonitor.domain.model
+package com.pawlowski.network.domain
 
 import androidx.compose.runtime.Immutable
 

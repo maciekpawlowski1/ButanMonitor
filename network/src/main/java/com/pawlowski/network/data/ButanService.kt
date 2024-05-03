@@ -1,6 +1,6 @@
-package com.pawlowski.butanmonitor.data
+package com.pawlowski.network.data
 
-import com.pawlowski.butanmonitor.domain.model.Measurement
+import com.pawlowski.network.domain.Measurement
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.receiveDeserialized

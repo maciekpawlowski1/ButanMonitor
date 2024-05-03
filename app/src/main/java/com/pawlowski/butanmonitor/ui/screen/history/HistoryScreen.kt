@@ -19,12 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.pawlowski.butanmonitor.domain.model.Measurement
 import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew
 import com.pawlowski.butanmonitor.ui.components.chipWithDropdown.SettingsIconWithDropdown
 import com.pawlowski.butanmonitor.ui.components.error.ErrorItem
 import com.pawlowski.butanmonitor.ui.utils.rememberChartNewRecords
 import com.pawlowski.butanmonitor.utils.Resource
+import com.pawlowski.network.domain.Measurement
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.time.Duration.Companion.hours

@@ -2,8 +2,8 @@ package com.pawlowski.butanmonitor.ui.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.pawlowski.butanmonitor.domain.model.Measurement
 import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew
+import com.pawlowski.network.domain.Measurement
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.datetime.LocalDate

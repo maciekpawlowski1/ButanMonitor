@@ -2,8 +2,8 @@ package com.pawlowski.butanmonitor.ui.screen.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pawlowski.butanmonitor.data.ButanService
 import com.pawlowski.butanmonitor.utils.RetrySharedFlow
+import com.pawlowski.network.data.ButanService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList

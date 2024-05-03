@@ -1,4 +1,4 @@
-package com.pawlowski.butanmonitor.data
+package com.pawlowski.network.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

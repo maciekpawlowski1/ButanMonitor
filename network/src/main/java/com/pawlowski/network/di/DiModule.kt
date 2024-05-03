@@ -1,4 +1,4 @@
-package com.pawlowski.butanmonitor.di
+package com.pawlowski.network.di
 
 import dagger.Module
 import dagger.Provides
