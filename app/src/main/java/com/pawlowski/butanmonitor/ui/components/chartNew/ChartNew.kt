@@ -42,6 +42,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 interface ChartNew {
@@ -58,7 +59,7 @@ interface ChartNew {
     sealed interface WidthConfig {
         data class Scrollable(
             val autoScroll: Boolean,
-            val millisecondsPerWidth: Long,
+            val timePerWidth: Duration,
         ) : WidthConfig
 
         data object Fit : WidthConfig
@@ -141,7 +142,7 @@ private fun Modifier.scrollableModifierOrNot(
                         getMaxScrollAvailable(
                             minTimestamp = axisTimestampRange.first,
                             maxTimestamp = axisTimestampRange.second,
-                            secondsPerScreenWidth = widthConfig.millisecondsPerWidth,
+                            millisecondsPerWidth = widthConfig.timePerWidth.inWholeMilliseconds,
                         ),
                 )
 
@@ -184,14 +185,14 @@ private fun Modifier.scrollableModifierOrNot(
 private fun getMaxScrollAvailable(
     minTimestamp: Long,
     maxTimestamp: Long,
-    secondsPerScreenWidth: Long,
+    millisecondsPerWidth: Long,
 ): Float {
     // TODO: Move to layout phase?
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val density = LocalDensity.current
 
     val diff = maxTimestamp - minTimestamp
-    val scaleX = with(density) { screenWidth.toPx() } / secondsPerScreenWidth
+    val scaleX = with(density) { screenWidth.toPx() } / millisecondsPerWidth
 
     return (diff * scaleX) - with(density) { screenWidth.toPx() }
 }
@@ -215,7 +216,7 @@ private fun ChartInternal(
 
     val scaleX =
         when (widthConfig) {
-            is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.millisecondsPerWidth
+            is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.timePerWidth.inWholeMilliseconds
             WidthConfig.Fit -> with(density) { screenWidth.toPx() } / (maxTimestamp - minTimestamp)
         }
     Canvas(

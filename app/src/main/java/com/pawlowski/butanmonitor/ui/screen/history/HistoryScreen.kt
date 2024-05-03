@@ -22,6 +22,7 @@ import com.pawlowski.butanmonitor.ui.utils.rememberChartNewRecords
 import com.pawlowski.butanmonitor.utils.Resource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +77,7 @@ fun HistoryScreen(
                     widthConfig =
                         ChartNew.WidthConfig.Scrollable(
                             autoScroll = false,
-                            millisecondsPerWidth = 60000,
+                            timePerWidth = 1.minutes,
                         ),
                 )
             }

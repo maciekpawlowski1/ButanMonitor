@@ -14,6 +14,7 @@ import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew
 import com.pawlowski.butanmonitor.ui.utils.rememberChartNewRecords
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Duration.Companion.minutes
 
 @Composable
 fun LiveChart(measurements: ImmutableList<Measurement>) {
@@ -45,7 +46,7 @@ fun LiveChart(measurements: ImmutableList<Measurement>) {
             widthConfig =
                 ChartNew.WidthConfig.Scrollable(
                     autoScroll = isAutoScrolling.value,
-                    millisecondsPerWidth = 60000L,
+                    timePerWidth = 1.minutes,
                 ),
         )
     }
