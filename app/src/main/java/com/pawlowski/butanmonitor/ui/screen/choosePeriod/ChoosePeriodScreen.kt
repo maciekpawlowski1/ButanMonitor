@@ -31,13 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.pawlowski.butanmonitor.ui.components.timePicker.TimePickerDialog
+import com.pawlowski.butanmonitor.ui.utils.formatDate
+import com.pawlowski.butanmonitor.ui.utils.formatTime
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
-import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +130,7 @@ private fun ChooseTimeRow(
     ) {
         val showChosenFromDialog = remember { mutableStateOf(false) }
         ChooseTimeCard(
-            text = chosenDate.value?.formatDateTimeWithLocalZone() ?: "Kliknij aby wybrać",
+            text = chosenDate.value?.formatDate() ?: "Kliknij aby wybrać",
             label = dateLabel,
             onClick = { showChosenFromDialog.value = true },
             modifier = Modifier.weight(weight = 1f),
@@ -148,7 +148,7 @@ private fun ChooseTimeRow(
 
         val showChosenToDialog = remember { mutableStateOf(false) }
         ChooseTimeCard(
-            text = chosenTime.value?.formatDateTimeWithLocalZone() ?: "Kliknij aby wybrać",
+            text = chosenTime.value?.formatTime() ?: "Kliknij aby wybrać",
             label = timeLabel,
             onClick = { showChosenToDialog.value = true },
             modifier = Modifier.weight(weight = 1f),
@@ -164,26 +164,6 @@ private fun ChooseTimeRow(
         }
     }
 }
-
-private fun LocalDate.formatDateTimeWithLocalZone() =
-    format(
-        LocalDate.Format {
-            dayOfMonth()
-            char('.')
-            monthNumber()
-            char('.')
-            year()
-        },
-    )
-
-private fun LocalTime.formatDateTimeWithLocalZone() =
-    format(
-        LocalTime.Format {
-            hour()
-            char(':')
-            minute()
-        },
-    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

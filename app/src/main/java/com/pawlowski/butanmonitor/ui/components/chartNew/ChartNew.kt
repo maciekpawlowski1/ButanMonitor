@@ -32,12 +32,17 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew.Axis
 import com.pawlowski.butanmonitor.ui.components.chartNew.ChartNew.WidthConfig
+import com.pawlowski.butanmonitor.ui.utils.formatDateTime
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Duration.Companion.minutes
 
 interface ChartNew {
     data class Record(
@@ -211,7 +216,7 @@ private fun ChartInternal(
     val scaleX =
         when (widthConfig) {
             is WidthConfig.Scrollable -> with(density) { screenWidth.toPx() } / widthConfig.millisecondsPerWidth
-            WidthConfig.Fit -> with(density) { screenWidth.toPx() } / maxTimestamp
+            WidthConfig.Fit -> with(density) { screenWidth.toPx() } / (maxTimestamp - minTimestamp)
         }
     Canvas(
         modifier =
@@ -242,6 +247,13 @@ private fun ChartInternal(
                     color = color,
                 )
             }
+            drawTimestampsLabels(
+                maxTimestamp = maxTimestamp,
+                scaleX = scaleX,
+                textMeasurer = textMeasurer,
+                canvasHeight = size.height,
+                minTimestamp = minTimestamp,
+            )
         }
     }
 }
@@ -269,6 +281,45 @@ private fun ImmutableList<Axis>.toScaledOffsets(
             color = axis.color,
         )
     }.toPersistentList()
+
+private fun DrawScope.drawTimestampsLabels(
+    minTimestamp: Long,
+    maxTimestamp: Long,
+    scaleX: Float,
+    textMeasurer: TextMeasurer,
+    canvasHeight: Float,
+) {
+    val timeDistanceBetweenLabels = 1.minutes.inWholeMilliseconds
+    var count = 1
+    while (true) {
+        val step = timeDistanceBetweenLabels * count++
+        val timestampOfStep = (step + minTimestamp)
+        if (timestampOfStep <= maxTimestamp) {
+            val textLayoutResult =
+                textMeasurer.measure(
+                    text =
+                        buildAnnotatedString {
+                            append(
+                                Instant.fromEpochMilliseconds(
+                                    timestampOfStep,
+                                ).toLocalDateTime(timeZone = TimeZone.currentSystemDefault()).formatDateTime(),
+                            )
+                        },
+                )
+
+            drawText(
+                textLayoutResult = textLayoutResult,
+                topLeft =
+                    Offset(
+                        x = step * scaleX - textLayoutResult.size.width / 2.0f,
+                        y = canvasHeight - textLayoutResult.size.height,
+                    ),
+            )
+        } else {
+            break
+        }
+    }
+}
 
 private fun DrawScope.drawRecordsPath(
     recordsPoints: List<Offset>,

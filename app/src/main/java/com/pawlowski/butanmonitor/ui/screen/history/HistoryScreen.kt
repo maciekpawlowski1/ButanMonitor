@@ -61,9 +61,6 @@ fun HistoryScreen(
             is Resource.Success -> {
                 val (propaneRecords, ammoniaRecords) = rememberChartNewRecords(measurements = measurements.data)
 
-                println(propaneRecords)
-                println(ammoniaRecords)
-
                 ChartNew(
                     axisses =
                         persistentListOf(
