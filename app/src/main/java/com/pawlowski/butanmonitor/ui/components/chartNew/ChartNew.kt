@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
@@ -130,17 +131,20 @@ private fun Modifier.scrollableModifierOrNot(
     composed {
         if (widthConfig is WidthConfig.Scrollable) {
             val maxScrollAvailable =
-                getMaxScrollAvailable(
-                    minTimestamp = axisTimestampRange.first,
-                    maxTimestamp = axisTimestampRange.second,
-                    secondsPerScreenWidth = widthConfig.millisecondsPerWidth,
+                rememberUpdatedState(
+                    newValue =
+                        getMaxScrollAvailable(
+                            minTimestamp = axisTimestampRange.first,
+                            maxTimestamp = axisTimestampRange.second,
+                            secondsPerScreenWidth = widthConfig.millisecondsPerWidth,
+                        ),
                 )
 
             val scrollState =
                 rememberScrollableState { delta ->
                     scrollOffset.floatValue =
                         (scrollOffset.floatValue + delta)
-                            .coerceAtLeast(minimumValue = -maxScrollAvailable)
+                            .coerceAtLeast(minimumValue = -maxScrollAvailable.value)
                             .coerceAtMost(maximumValue = 0f)
                     delta
                 }
@@ -151,7 +155,7 @@ private fun Modifier.scrollableModifierOrNot(
                         if (!scrollState.isScrollInProgress && widthConfig.isAutoScroll()) {
                             runCatching {
                                 val scrollByValue =
-                                    -abs(scrollOffset.floatValue - maxScrollAvailable)
+                                    -abs(scrollOffset.floatValue - maxScrollAvailable.value)
                                 scrollState.scrollBy(scrollByValue)
                             }
                         }
