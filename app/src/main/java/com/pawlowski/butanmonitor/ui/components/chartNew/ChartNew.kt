@@ -43,7 +43,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 interface ChartNew {
     data class Record(
@@ -248,13 +247,16 @@ private fun ChartInternal(
                     color = color,
                 )
             }
-            drawTimestampsLabels(
-                maxTimestamp = maxTimestamp,
-                scaleX = scaleX,
-                textMeasurer = textMeasurer,
-                canvasHeight = size.height,
-                minTimestamp = minTimestamp,
-            )
+            (widthConfig as? WidthConfig.Scrollable)?.let {
+                drawTimestampsLabels(
+                    maxTimestamp = maxTimestamp,
+                    scaleX = scaleX,
+                    textMeasurer = textMeasurer,
+                    canvasHeight = size.height,
+                    minTimestamp = minTimestamp,
+                    timeDistanceBetweenLabels = widthConfig.timePerWidth,
+                )
+            }
         }
     }
 }
@@ -289,11 +291,11 @@ private fun DrawScope.drawTimestampsLabels(
     scaleX: Float,
     textMeasurer: TextMeasurer,
     canvasHeight: Float,
+    timeDistanceBetweenLabels: Duration,
 ) {
-    val timeDistanceBetweenLabels = 1.minutes.inWholeMilliseconds
     var count = 1
     while (true) {
-        val step = timeDistanceBetweenLabels * count++
+        val step = timeDistanceBetweenLabels.inWholeMilliseconds * count++
         val timestampOfStep = (step + minTimestamp)
         if (timestampOfStep <= maxTimestamp) {
             val textLayoutResult =
