@@ -6,6 +6,7 @@ import com.pawlowski.butanmonitor.utils.Resource
 import com.pawlowski.butanmonitor.utils.RetrySharedFlow
 import com.pawlowski.butanmonitor.utils.resourceFlowWithRetrying
 import com.pawlowski.network.data.ButanService
+import com.pawlowski.network.domain.Thresholds
 import com.pawlowski.notifications.synchronization.RunPushTokenSynchronizationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
@@ -40,6 +41,7 @@ class MainViewModel
                     isError = false,
                     isLoading = true,
                     thresholdsRequestResource = null,
+                    thresholdsResource = Resource.Loading,
                 ),
             )
 
@@ -100,12 +102,19 @@ class MainViewModel
                                             newResource
                                         }
 
-                                    it.copy(thresholdsRequestResource = newValueOrNull)
+                                    it.copy(
+                                        thresholdsRequestResource = newValueOrNull,
+                                        thresholdsResource =
+                                            Resource.Success(
+                                                Thresholds(
+                                                    ammoniaThreshold = event.ammoniaThreshold,
+                                                    propaneThreshold = event.propaneThreshold,
+                                                ),
+                                            ),
+                                    )
                                 }
                             }
                         }
-                    } else {
-                        println("False")
                     }
                 }
             }
@@ -114,6 +123,15 @@ class MainViewModel
         init {
             viewModelScope.launch {
                 runPushTokenSynchronizationUseCase()
+            }
+            viewModelScope.launch {
+                resourceFlowWithRetrying(retrySharedFlow = retrySharedFlow) {
+                    butanService.geThresholds()
+                }.collect { newThresholds ->
+                    _stateFlow.update {
+                        it.copy(thresholdsResource = newThresholds)
+                    }
+                }
             }
         }
     }

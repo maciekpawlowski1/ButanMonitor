@@ -21,10 +21,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pawlowski.butanmonitor.ui.components.bottomSheet.BaseBottomSheet
+import com.pawlowski.network.domain.Thresholds
 
 @Composable
 fun ChooseThresholdsBottomSheet(
     show: Boolean,
+    initialThresholds: Thresholds,
     onDismiss: () -> Unit,
     onConfirm: (Int?, Int?) -> Unit,
 ) {
@@ -46,7 +48,7 @@ fun ChooseThresholdsBottomSheet(
 
             val ammoniaThreshold =
                 remember {
-                    mutableStateOf("")
+                    mutableStateOf(initialThresholds.ammoniaThreshold?.toString() ?: "")
                 }
             TextField(
                 value = ammoniaThreshold.value,
@@ -67,7 +69,7 @@ fun ChooseThresholdsBottomSheet(
 
             val propaneThreshold =
                 remember {
-                    mutableStateOf("")
+                    mutableStateOf(initialThresholds.propaneThreshold?.toString() ?: "")
                 }
             TextField(
                 value = propaneThreshold.value,

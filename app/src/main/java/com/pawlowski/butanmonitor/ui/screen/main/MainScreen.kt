@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,29 +43,45 @@ fun MainScreen(
                     contentDescription = null,
                 )
             }
-            IconButton(
-                onClick = { showThresholdsBottomSheet.value = true },
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Notifications,
-                    contentDescription = null,
-                )
+            if (state.thresholdsResource !is Resource.Loading) {
+                IconButton(
+                    onClick = {
+                        if (state.thresholdsResource is Resource.Success) {
+                            showThresholdsBottomSheet.value = true
+                        } else {
+                            onEvent(MainEvent.RetryClick)
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector =
+                            if (state.thresholdsResource is Resource.Success) {
+                                Icons.Filled.Notifications
+                            } else {
+                                Icons.Filled.Error
+                            },
+                        contentDescription = null,
+                    )
+                }
             }
         }
 
-        ChooseThresholdsBottomSheet(
-            show = showThresholdsBottomSheet.value,
-            onDismiss = { showThresholdsBottomSheet.value = false },
-            onConfirm = { ammoniaThreshold, propaneThreshold ->
-                onEvent(
-                    MainEvent.UpdateThresholds(
-                        propaneThreshold = propaneThreshold,
-                        ammoniaThreshold = ammoniaThreshold,
-                    ),
-                )
-                showThresholdsBottomSheet.value = false
-            },
-        )
+        if (state.thresholdsResource is Resource.Success) {
+            ChooseThresholdsBottomSheet(
+                show = showThresholdsBottomSheet.value,
+                onDismiss = { showThresholdsBottomSheet.value = false },
+                initialThresholds = state.thresholdsResource.data,
+                onConfirm = { ammoniaThreshold, propaneThreshold ->
+                    onEvent(
+                        MainEvent.UpdateThresholds(
+                            propaneThreshold = propaneThreshold,
+                            ammoniaThreshold = ammoniaThreshold,
+                        ),
+                    )
+                    showThresholdsBottomSheet.value = false
+                },
+            )
+        }
 
         when {
             state.isLoading || state.thresholdsRequestResource is Resource.Loading -> {

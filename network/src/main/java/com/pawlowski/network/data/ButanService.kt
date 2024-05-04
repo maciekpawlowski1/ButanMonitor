@@ -1,6 +1,7 @@
 package com.pawlowski.network.data
 
 import com.pawlowski.network.domain.Measurement
+import com.pawlowski.network.domain.Thresholds
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.receiveDeserialized
@@ -54,6 +55,7 @@ class ButanService
             httpClient.request(urlString = "http://srv3.enteam.pl/fcm") {
                 method = HttpMethod.Put
                 port = 3012
+                contentType(type = ContentType.parse("application/json"))
                 setBody(body = NotificationTokenDto(token = token))
             }.body<NotificationTokenDto>()
         }
@@ -75,6 +77,18 @@ class ButanService
                 )
             }.body<ThresholdsDto>()
         }
+
+        suspend fun geThresholds(): Thresholds =
+            httpClient.request(urlString = "http://srv3.enteam.pl/thresholds") {
+                method = HttpMethod.Get
+                port = 3012
+                contentType(type = ContentType.parse("application/json"))
+            }.body<ThresholdsDto>().let {
+                Thresholds(
+                    ammoniaThreshold = it.ammoniaThreshold,
+                    propaneThreshold = it.propaneThreshold,
+                )
+            }
 
         private fun MeasurementDto.toDomain(): Measurement =
             Measurement(
