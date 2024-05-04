@@ -2,7 +2,9 @@ package com.pawlowski.butanmonitor.ui.screen.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pawlowski.butanmonitor.utils.Resource
 import com.pawlowski.butanmonitor.utils.RetrySharedFlow
+import com.pawlowski.butanmonitor.utils.resourceFlowWithRetrying
 import com.pawlowski.network.data.ButanService
 import com.pawlowski.notifications.synchronization.RunPushTokenSynchronizationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +39,7 @@ class MainViewModel
                     measurements = persistentListOf(),
                     isError = false,
                     isLoading = true,
+                    thresholdsRequestResource = null,
                 ),
             )
 
@@ -78,6 +81,32 @@ class MainViewModel
             when (event) {
                 is MainEvent.RetryClick -> {
                     retrySharedFlow.sendRetryEvent()
+                }
+
+                is MainEvent.UpdateThresholds -> {
+                    if (stateFlow.value.thresholdsRequestResource == null) {
+                        viewModelScope.launch {
+                            resourceFlowWithRetrying(retrySharedFlow = retrySharedFlow) {
+                                butanService.updateThresholds(
+                                    propaneThreshold = event.propaneThreshold,
+                                    ammoniaThreshold = event.ammoniaThreshold,
+                                )
+                            }.collect { newResource ->
+                                _stateFlow.update {
+                                    val newValueOrNull =
+                                        if (newResource is Resource.Success) {
+                                            null
+                                        } else {
+                                            newResource
+                                        }
+
+                                    it.copy(thresholdsRequestResource = newValueOrNull)
+                                }
+                            }
+                        }
+                    } else {
+                        println("False")
+                    }
                 }
             }
         }

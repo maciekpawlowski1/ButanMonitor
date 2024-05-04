@@ -9,7 +9,9 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.port
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +56,24 @@ class ButanService
                 port = 3012
                 setBody(body = NotificationTokenDto(token = token))
             }.body<NotificationTokenDto>()
+        }
+
+        suspend fun updateThresholds(
+            propaneThreshold: Int?,
+            ammoniaThreshold: Int?,
+        ) {
+            httpClient.request(urlString = "http://srv3.enteam.pl/thresholds") {
+                method = HttpMethod.Put
+                port = 3012
+                contentType(type = ContentType.parse("application/json"))
+                setBody(
+                    body =
+                        ThresholdsDto(
+                            propaneThreshold = propaneThreshold,
+                            ammoniaThreshold = ammoniaThreshold,
+                        ),
+                )
+            }.body<ThresholdsDto>()
         }
 
         private fun MeasurementDto.toDomain(): Measurement =
