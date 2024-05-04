@@ -78,7 +78,7 @@ class ButanService
             }.body<ThresholdsDto>()
         }
 
-        suspend fun geThresholds(): Thresholds =
+        suspend fun getThresholds(): Thresholds =
             httpClient.request(urlString = "http://srv3.enteam.pl/thresholds") {
                 method = HttpMethod.Get
                 port = 3012

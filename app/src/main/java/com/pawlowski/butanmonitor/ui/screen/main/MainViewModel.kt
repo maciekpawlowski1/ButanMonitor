@@ -126,7 +126,7 @@ class MainViewModel
             }
             viewModelScope.launch {
                 resourceFlowWithRetrying(retrySharedFlow = retrySharedFlow) {
-                    butanService.geThresholds()
+                    butanService.getThresholds()
                 }.collect { newThresholds ->
                     _stateFlow.update {
                         it.copy(thresholdsResource = newThresholds)
