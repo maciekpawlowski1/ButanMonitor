@@ -27,6 +27,7 @@ import com.pawlowski.butanmonitor.utils.Resource
 import com.pawlowski.network.domain.Measurement
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -139,27 +140,52 @@ fun HistoryScreen(
                 )
             }
             is Resource.Success -> {
-                val (propaneRecords, ammoniaRecords) = rememberChartNewRecords(measurements = measurements.data)
-
-                ChartNew(
-                    axisses =
-                        persistentListOf(
-                            ChartNew.Axis(
-                                ammoniaRecords,
-                                color = Color.Yellow,
-                            ),
-                            ChartNew.Axis(
-                                propaneRecords,
-                                color = Color.Blue,
-                            ),
-                        ),
-                    widthConfig =
-                        ChartNew.WidthConfig.Scrollable(
-                            autoScroll = false,
-                            timePerWidth = chosenTimestampDensity.value,
-                        ),
-                )
+                if (measurements.data.isNotEmpty()) {
+                    HistoryChart(
+                        measurements = measurements.data,
+                        chosenTimestampDensity = chosenTimestampDensity.value,
+                    )
+                } else {
+                    EmptyState()
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun HistoryChart(
+    measurements: ImmutableList<Measurement>,
+    chosenTimestampDensity: Duration,
+) {
+    val (propaneRecords, ammoniaRecords) = rememberChartNewRecords(measurements = measurements)
+
+    ChartNew(
+        axisses =
+            persistentListOf(
+                ChartNew.Axis(
+                    ammoniaRecords,
+                    color = Color.Yellow,
+                ),
+                ChartNew.Axis(
+                    propaneRecords,
+                    color = Color.Blue,
+                ),
+            ),
+        widthConfig =
+            ChartNew.WidthConfig.Scrollable(
+                autoScroll = false,
+                timePerWidth = chosenTimestampDensity,
+            ),
+    )
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "Nie ma pomiarów dla podanych kryteriów")
     }
 }
